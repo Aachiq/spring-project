@@ -1,16 +1,23 @@
 package com.example.restapi.controller;
 
 import com.example.restapi.dto.UserDto;
+import com.example.restapi.model.User;
+import com.example.restapi.repository.UserRepository;
 import com.example.restapi.service.UserService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
+
     // why this public
-    public UserController(UserService userServ){
+    public UserController(UserService userServ, UserRepository userRepo){
         this.userService = userServ;
+        this.userRepository = userRepo;
     }
 
     @GetMapping("/hello")
@@ -56,5 +63,11 @@ public class UserController {
     @PostMapping("/users2")
     public String createUser(@RequestBody UserDto userData) {
         return "User created: " + userData.getName() + userData.getPhone();
+    }
+
+    // get Users from db
+    @GetMapping("users-list")
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
     }
 }
