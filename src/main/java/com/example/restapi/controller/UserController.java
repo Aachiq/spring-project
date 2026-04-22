@@ -6,6 +6,8 @@ import com.example.restapi.repository.UserRepository;
 import com.example.restapi.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -67,4 +69,36 @@ public class UserController {
     public List<User> getAllUsers(){
         return userService.findAllUsers();
     }
+
+    // practice from express familiar coding
+    // app.get("/categories", (req, res) => res.json(["A","B","C"]) });
+    @GetMapping("data-array")
+    public List<String> getDataList(){
+        List<String> dataList = Arrays.asList("A", "B", "C");
+        return dataList;
+        /*
+            List<String> dataList;
+            dataList = Arrays.asList("A", "B", "C");
+            return dataList;
+        */
+    }
+    // the example above works fine -> but it's fixed size array -< Now let's do dynamic Array
+
+    @GetMapping("data-dynamic")
+    public List<String> getModifiableListData(){
+        List<String> modifiableList = new ArrayList<>();
+        modifiableList.add("A");
+        modifiableList.add("B");
+        return modifiableList;
+    }
+
+    /* KEEP Notes
+    List<String> categories = Arrays.asList("A", "B"); // old version fixed size
+    List<String> categories = List.of("A", "B"); // // new version fixed size
+    // both need wrapper of "ArrayList<>" to be modifiable
+     List<String> categories = new ArrayList<>(Arrays.asList("A","B"));
+     List<String> categories = new ArrayList<>(List.of("A","B"));
+    */
+
+
 }
