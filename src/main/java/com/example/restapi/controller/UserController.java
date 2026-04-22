@@ -10,14 +10,11 @@ import java.util.List;
 
 @RestController
 public class UserController {
-
     private final UserService userService;
-    private final UserRepository userRepository;
 
     // why this public
-    public UserController(UserService userServ, UserRepository userRepo){
+    public UserController(UserService userServ){
         this.userService = userServ;
-        this.userRepository = userRepo;
     }
 
     @GetMapping("/hello")
@@ -68,6 +65,6 @@ public class UserController {
     // get Users from db
     @GetMapping("users-list")
     public List<User> getAllUsers(){
-        return userRepository.findAll();
+        return userService.findAllUsers();
     }
 }
