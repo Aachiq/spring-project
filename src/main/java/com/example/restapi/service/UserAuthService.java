@@ -1,6 +1,7 @@
 package com.example.restapi.service;
 
 import com.example.restapi.dto.SignupRequestDTO;
+import com.example.restapi.dto.SignupResponseDTO;
 import com.example.restapi.model.UserAuth;
 import com.example.restapi.repository.UserAuthRepository;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,15 @@ public class UserAuthService {
         this.userAuthRepository = userAuthRepo;
     }
 
-    public String registerUser(SignupRequestDTO userData){
+    public SignupResponseDTO registerUser(SignupRequestDTO userData){
 
+        if(userAuthRepository.existsByEmail(userData.getEmail())){
+            return new SignupResponseDTO("User Already Exist");
+        }
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
         UserAuth user = new UserAuth(userData.getName(), userData.getEmail(), encoder.encode(userData.getPassword()));
         userAuthRepository.save(user);
-        return "User Registred Successfully";
+        return new SignupResponseDTO("User Registred Successfully");
     }
 }
