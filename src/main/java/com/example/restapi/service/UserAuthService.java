@@ -5,6 +5,8 @@ import com.example.restapi.model.UserAuth;
 import com.example.restapi.repository.UserAuthRepository;
 import org.springframework.stereotype.Service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 @Service
 public class UserAuthService {
 
@@ -16,7 +18,10 @@ public class UserAuthService {
     }
 
     public String registerUser(SignupRequestDTO userData){
-        UserAuth user = new UserAuth(userData.getName(), userData.getEmail(), userData.getPassword());
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        UserAuth user = new UserAuth(userData.getName(), userData.getEmail(), encoder.encode(userData.getPassword()));
         userAuthRepository.save(user);
         return "User Registred Successfully";
     }
