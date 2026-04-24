@@ -3,6 +3,7 @@ package com.example.restapi.controller;
 import com.example.restapi.dto.SignupRequestDTO;
 import com.example.restapi.dto.SignupResponseDTO;
 import com.example.restapi.service.UserAuthService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +17,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public SignupResponseDTO signupUser(@RequestBody SignupRequestDTO userSignup){
+    public SignupResponseDTO signupUser(@RequestBody @Valid SignupRequestDTO userSignup){
         return userAuthService.registerUser(userSignup);
     }
 }
