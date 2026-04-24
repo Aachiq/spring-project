@@ -1,6 +1,7 @@
 package com.example.restapi.controller;
 
 import com.example.restapi.dto.SignupRequestDTO;
+import com.example.restapi.dto.SignupResponseDTO;
 import com.example.restapi.service.UserAuthService;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +16,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public String signupUser(@RequestBody SignupRequestDTO userSignup){
+    public SignupResponseDTO signupUser(@RequestBody SignupRequestDTO userSignup){
         return userAuthService.registerUser(userSignup);
     }
 }
