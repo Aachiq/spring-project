@@ -1,5 +1,6 @@
 package com.example.restapi.controller;
 
+import com.example.restapi.dto.SigninRequestDTO;
 import com.example.restapi.dto.SignupRequestDTO;
 import com.example.restapi.dto.SignupResponseDTO;
 import com.example.restapi.service.UserAuthService;
@@ -19,5 +20,10 @@ public class AuthController {
     @PostMapping("/signup")
     public SignupResponseDTO signupUser(@RequestBody @Valid SignupRequestDTO userSignup){
         return userAuthService.registerUser(userSignup);
+    }
+
+    @PostMapping("/signin")
+    public String signin(@RequestBody SigninRequestDTO userSignin){
+        return userAuthService.login(userSignin);
     }
 }
