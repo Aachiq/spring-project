@@ -27,4 +27,11 @@ public class AuthController {
     public SigninResponseDTO signin(@RequestBody SigninRequestDTO userSignin){
         return userAuthService.login(userSignin);
     }
+
+    @PostMapping("/signout")
+    public String logout() {
+        // For simple apps, logout is client-side: just delete token
+        return "Logged out successfully";
+    }
+
 }
