@@ -21,4 +21,15 @@ public class JwtUtils {
                 .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
                 .compact();
     }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .setSigningKey(JWT_SECRET)
+                    .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
