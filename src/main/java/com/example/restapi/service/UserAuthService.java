@@ -6,6 +6,7 @@ import com.example.restapi.dto.SignupRequestDTO;
 import com.example.restapi.dto.SignupResponseDTO;
 import com.example.restapi.model.UserAuth;
 import com.example.restapi.repository.UserAuthRepository;
+import com.example.restapi.security.JwtUtils;
 import org.springframework.stereotype.Service;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,10 +19,12 @@ public class UserAuthService {
     // inject Repository
     private final UserAuthRepository userAuthRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public UserAuthService(UserAuthRepository userAuthRepo, BCryptPasswordEncoder bCryptPasswordEncoder){
+    public UserAuthService(UserAuthRepository userAuthRepo, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtils jwtUtils){
         this.userAuthRepository = userAuthRepo;
         this.passwordEncoder = bCryptPasswordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     public SignupResponseDTO registerUser(SignupRequestDTO userData){
@@ -43,15 +46,17 @@ public class UserAuthService {
 
         // use isEmpty() to check if no data
         if(foundUser.isEmpty()){
-            return new SigninResponseDTO(null, null, "User Email not Found !");
+            return new SigninResponseDTO(null, null, "User Email not Found !", null);
         }
         // use get() if email exist
         UserAuth user = foundUser.get();
 
         // check password comparison
         if(!passwordEncoder.matches(loginData.getPassword(), user.getPassword())){
-            return new SigninResponseDTO(null, null, "Password not matched !");
+            return new SigninResponseDTO(null, null, "Password not matched !", null);
         }
-        return new SigninResponseDTO(user.getName(), user.getEmail(), "Login Successful !");
+
+        String token = jwtUtils.generateToken(user.getEmail());
+        return new SigninResponseDTO(user.getName(), user.getEmail(), "Login Successful !", token);
     }
 }
