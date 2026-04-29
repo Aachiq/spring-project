@@ -1,7 +1,9 @@
 package com.example.restapi.controller;
 
+import com.example.restapi.dto.ProductDetailsResponseDTO;
 import com.example.restapi.dto.ProductsResponseDTO;
 import com.example.restapi.model.Product;
+import com.example.restapi.model.Role;
 import com.example.restapi.security.JwtUtils;
 import com.example.restapi.service.ProductService;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ public class ProductController {
     }
 
     /*
+    // here is public route
     @GetMapping
     public List<Product> getProducts(){
         return this.productService.findAllProducts();
@@ -29,7 +32,7 @@ public class ProductController {
     */
 
     @GetMapping
-    public ProductsResponseDTO getProducts(@RequestHeader(value = "Authorization", required = false) String authHeader){
+    public ProductsResponseDTO getProducts(@RequestHeader(value = "Authorization") String authHeader){
         // 1. Check header exists
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return new ProductsResponseDTO(null,"Unauthorized: No token");
@@ -50,7 +53,33 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Product> getOneProduct(@PathVariable Long id){
-        return productService.getProductById(id);
+    public ProductDetailsResponseDTO getOneProduct(@PathVariable Long id, @RequestHeader(value = "Authorization") String authHeader){
+        // 1. Check header exists
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return new ProductDetailsResponseDTO(null,"Unauthorized: No token");
+        }
+
+        // 2. Extract token
+        String token = authHeader.substring(7);
+
+        // 3. Validate token (you must implement validation method)
+        if (!jwtUtils.validateToken(token)) {
+            return new ProductDetailsResponseDTO(null,"Unauthorized: Invalid token");
+        }
+
+        // 4. check role of user by extrating rol from token
+        String userRole = jwtUtils.extractRole(token);
+
+        System.out.println("extractRole : "+ userRole);
+
+        if (!userRole.equals("ADMIN")) {
+            return new ProductDetailsResponseDTO(null,"Unauthorized: Admin Resources");
+        }
+
+        Optional<Product> foundProduct = productService.getProductById(id);
+        if(foundProduct.isEmpty()){
+            return new ProductDetailsResponseDTO(null,"Product By Id Not Found !");
+        }
+        return new ProductDetailsResponseDTO(foundProduct.get(),"Product By Id Fetched Successfully !");
     }
 }

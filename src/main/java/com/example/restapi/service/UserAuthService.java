@@ -4,6 +4,7 @@ import com.example.restapi.dto.SigninRequestDTO;
 import com.example.restapi.dto.SigninResponseDTO;
 import com.example.restapi.dto.SignupRequestDTO;
 import com.example.restapi.dto.SignupResponseDTO;
+import com.example.restapi.model.Role;
 import com.example.restapi.model.UserAuth;
 import com.example.restapi.repository.UserAuthRepository;
 import com.example.restapi.security.JwtUtils;
@@ -33,7 +34,7 @@ public class UserAuthService {
             return new SignupResponseDTO("User Already Exist");
         }
 
-        UserAuth user = new UserAuth(userData.getName(), userData.getEmail(), passwordEncoder.encode(userData.getPassword()));
+        UserAuth user = new UserAuth(userData.getName(), userData.getEmail(), passwordEncoder.encode(userData.getPassword()), Role.USER);
         userAuthRepository.save(user);
         return new SignupResponseDTO("User Registred Successfully");
     }
@@ -56,7 +57,7 @@ public class UserAuthService {
             return new SigninResponseDTO(null, null, "Password not matched !", null);
         }
 
-        String token = jwtUtils.generateToken(user.getEmail());
+        String token = jwtUtils.generateToken(user.getEmail(), user.getRole().name());
         return new SigninResponseDTO(user.getName(), user.getEmail(), "Login Successful !", token);
     }
 }
