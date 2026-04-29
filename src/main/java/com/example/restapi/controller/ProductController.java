@@ -2,6 +2,8 @@ package com.example.restapi.controller;
 
 import com.example.restapi.dto.ProductDetailsResponseDTO;
 import com.example.restapi.dto.ProductsResponseDTO;
+import com.example.restapi.exception.ForbiddenException;
+import com.example.restapi.exception.UnauthorizedException;
 import com.example.restapi.model.Product;
 import com.example.restapi.model.Role;
 import com.example.restapi.security.JwtUtils;
@@ -48,7 +50,7 @@ public class ProductController {
 
         // here give access
         List<Product> products = this.productService.findAllProducts();
-        return new ProductsResponseDTO(products,"Unauthorized: No token");
+        return new ProductsResponseDTO(products,"Products Fetched Successfully !");
 
     }
 
@@ -56,7 +58,8 @@ public class ProductController {
     public ProductDetailsResponseDTO getOneProduct(@PathVariable Long id, @RequestHeader(value = "Authorization") String authHeader){
         // 1. Check header exists
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return new ProductDetailsResponseDTO(null,"Unauthorized: No token");
+            // return new ProductDetailsResponseDTO(null,"Unauthorized: No token");
+            throw new UnauthorizedException("Unauthorized: No token");
         }
 
         // 2. Extract token
@@ -64,16 +67,18 @@ public class ProductController {
 
         // 3. Validate token (you must implement validation method)
         if (!jwtUtils.validateToken(token)) {
-            return new ProductDetailsResponseDTO(null,"Unauthorized: Invalid token");
+            // return new ProductDetailsResponseDTO(null,"Unauthorized: Invalid token");
+            throw new UnauthorizedException("Unauthorized: Invalid Token");
         }
 
-        // 4. check role of user by extrating rol from token
+        // 4. check role of user by extracting role from token
         String userRole = jwtUtils.extractRole(token);
 
         System.out.println("extractRole : "+ userRole);
 
         if (!userRole.equals("ADMIN")) {
-            return new ProductDetailsResponseDTO(null,"Unauthorized: Admin Resources");
+            //return new ProductDetailsResponseDTO(null,"Unauthorized: Admin Resources");
+            throw new ForbiddenException("Unauthorized: Admin Resources");
         }
 
         Optional<Product> foundProduct = productService.getProductById(id);
