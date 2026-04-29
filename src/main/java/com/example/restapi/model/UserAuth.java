@@ -1,9 +1,6 @@
 package com.example.restapi.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class UserAuth {
@@ -15,14 +12,18 @@ public class UserAuth {
     private String email;
     private String password;
 
+    @Enumerated(EnumType.STRING) // important for Enums
+    private Role role;
+
     public UserAuth() {
     }
 
     // don't include id in constructore becasue in creation User we won't pass ID
-    public UserAuth(String name, String email, String password){
+    public UserAuth(String name, String email, String password, Role role){
         this.name = name;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
     // getters & setters
@@ -34,5 +35,7 @@ public class UserAuth {
     public void setEmail(String email){ this.email = email;}
     public String getPassword(){ return this.password;}
     public void setPassword(String password){ this.password = password;}
+    public Role getRole(){ return this.role;}
+    public void setRole(Role role){ this.role = role;}
 
 }
