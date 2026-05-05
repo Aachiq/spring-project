@@ -1,6 +1,7 @@
 package com.example.restapi.security;
 
 import com.example.restapi.model.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,4 +45,14 @@ public class JwtUtils {
                 .getBody()
                 .get("role", String.class);
     }
+
+    // add extract email from token
+    public String getEmailFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(JWT_SECRET)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getSubject();
+    }
+
 }

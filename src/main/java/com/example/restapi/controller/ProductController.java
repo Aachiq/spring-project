@@ -2,10 +2,14 @@ package com.example.restapi.controller;
 
 import com.example.restapi.dto.ProductDetailsResponseDTO;
 import com.example.restapi.dto.ProductsResponseDTO;
+import com.example.restapi.exception.ForbiddenException;
+import com.example.restapi.exception.UnauthorizedException;
 import com.example.restapi.model.Product;
 import com.example.restapi.model.Role;
+import com.example.restapi.model.UserAuth;
 import com.example.restapi.security.JwtUtils;
 import com.example.restapi.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,50 +36,46 @@ public class ProductController {
     */
 
     @GetMapping
-    public ProductsResponseDTO getProducts(@RequestHeader(value = "Authorization") String authHeader){
-        // 1. Check header exists
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return new ProductsResponseDTO(null,"Unauthorized: No token");
+    public ProductsResponseDTO getProducts(HttpServletRequest request){
+        Boolean logged = (Boolean) request.getAttribute("logged");
+        UserAuth currentUser = (UserAuth) request.getAttribute("currentUser");
+
+        // Test user access when get authenticated
+        System.out.println("### logged " + logged);
+        System.out.println("### currentUser " + currentUser.getName());
+
+        if (logged == null || !logged) {
+            throw new UnauthorizedException("Login required");
         }
 
-        // 2. Extract token
-        String token = authHeader.substring(7);
-
-        // 3. Validate token (you must implement validation method)
-        if (!jwtUtils.validateToken(token)) {
-            return new ProductsResponseDTO(null,"Unauthorized: Invalid token");
+        if (currentUser == null) {
+            throw new UnauthorizedException("Auth User Not Exist");
         }
 
         // here give access
         List<Product> products = this.productService.findAllProducts();
-        return new ProductsResponseDTO(products,"Unauthorized: No token");
+        return new ProductsResponseDTO(products,"Products Fetched Successfully !");
 
     }
 
     @GetMapping("/{id}")
-    public ProductDetailsResponseDTO getOneProduct(@PathVariable Long id, @RequestHeader(value = "Authorization") String authHeader){
-        // 1. Check header exists
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return new ProductDetailsResponseDTO(null,"Unauthorized: No token");
+    public ProductDetailsResponseDTO getOneProduct(@PathVariable Long id, HttpServletRequest request){
+
+        // 1. check login
+        Boolean logged = (Boolean) request.getAttribute("logged");
+
+        if (logged == null || !logged) {
+            throw new UnauthorizedException("Login required");
         }
 
-        // 2. Extract token
-        String token = authHeader.substring(7);
+        // 2. check role
+        String role = (String) request.getAttribute("userRole");
 
-        // 3. Validate token (you must implement validation method)
-        if (!jwtUtils.validateToken(token)) {
-            return new ProductDetailsResponseDTO(null,"Unauthorized: Invalid token");
+        if (role == null || !role.equals("ADMIN")) {
+            throw new ForbiddenException("Admin only access");
         }
 
-        // 4. check role of user by extrating rol from token
-        String userRole = jwtUtils.extractRole(token);
-
-        System.out.println("extractRole : "+ userRole);
-
-        if (!userRole.equals("ADMIN")) {
-            return new ProductDetailsResponseDTO(null,"Unauthorized: Admin Resources");
-        }
-
+        // 3. busniss logic
         Optional<Product> foundProduct = productService.getProductById(id);
         if(foundProduct.isEmpty()){
             return new ProductDetailsResponseDTO(null,"Product By Id Not Found !");
