@@ -1,7 +1,10 @@
 package com.example.restapi.filter;
 
 import com.example.restapi.exception.UnauthorizedException;
+import com.example.restapi.model.UserAuth;
+import com.example.restapi.repository.UserAuthRepository;
 import com.example.restapi.security.JwtUtils;
+import com.example.restapi.service.UserAuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,13 +13,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
+    private final UserAuthRepository userAuthRepository;
 
-    public JwtFilter(JwtUtils jwtUtils) {
+    public JwtFilter(JwtUtils jwtUtils, UserAuthRepository userRepository) {
         this.jwtUtils = jwtUtils;
+        this.userAuthRepository = userRepository;
     }
 
     @Override
@@ -46,22 +52,19 @@ public class JwtFilter extends OncePerRequestFilter {
         request.setAttribute("userRole", role);
         request.setAttribute("logged", true);
 
+        // get auth user data
+        // Fetch user from token
+        String email = jwtUtils.getEmailFromToken(token);
+        Optional<UserAuth> userOpt = userAuthRepository.findUserAuthByEmail(email);
+        if (userOpt.isEmpty()) {
+            throw new UnauthorizedException("User not found");
+        }
+
+        // Store current user in request attribute for controllers
+        request.setAttribute("currentUser", userOpt.get());
+
         // 6. request
         filterChain.doFilter(request, response);
-
-        // ### Later -> request.setAttribute("currentUser", user);
-        /*
-            // Fetch user from token
-            String email = JwtUtil.getEmailFromToken(token);
-            Optional<User> userOpt = authService.getUserByEmail(email);
-            if (userOpt.isEmpty()) {
-                throw new UnauthorizedException("User not found");
-            }
-
-            // Store current user in request attribute for controllers
-            request.setAttribute("currentUser", userOpt.get());
-        ### END Later
-        */
 
     }
 }

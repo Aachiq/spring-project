@@ -6,6 +6,7 @@ import com.example.restapi.exception.ForbiddenException;
 import com.example.restapi.exception.UnauthorizedException;
 import com.example.restapi.model.Product;
 import com.example.restapi.model.Role;
+import com.example.restapi.model.UserAuth;
 import com.example.restapi.security.JwtUtils;
 import com.example.restapi.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,11 +38,18 @@ public class ProductController {
     @GetMapping
     public ProductsResponseDTO getProducts(HttpServletRequest request){
         Boolean logged = (Boolean) request.getAttribute("logged");
+        UserAuth currentUser = (UserAuth) request.getAttribute("currentUser");
 
-        System.out.println("logged " + logged);
+        // Test user access when get authenticated
+        System.out.println("### logged " + logged);
+        System.out.println("### currentUser " + currentUser.getName());
 
         if (logged == null || !logged) {
             throw new UnauthorizedException("Login required");
+        }
+
+        if (currentUser == null) {
+            throw new UnauthorizedException("Auth User Not Exist");
         }
 
         // here give access
