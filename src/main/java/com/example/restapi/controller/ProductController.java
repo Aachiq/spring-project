@@ -11,6 +11,8 @@ import com.example.restapi.security.JwtUtils;
 import com.example.restapi.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,20 +39,17 @@ public class ProductController {
 
     @GetMapping
     public ProductsResponseDTO getProducts(HttpServletRequest request){
-        Boolean logged = (Boolean) request.getAttribute("logged");
-        UserAuth currentUser = (UserAuth) request.getAttribute("currentUser");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        // Test user access when get authenticated
-        System.out.println("### logged " + logged);
-        System.out.println("### currentUser " + currentUser.getName());
-
-        if (logged == null || !logged) {
+        if (auth == null || !auth.isAuthenticated()) {
             throw new UnauthorizedException("Login required");
         }
 
+        /*
         if (currentUser == null) {
             throw new UnauthorizedException("Auth User Not Exist");
         }
+        */
 
         // here give access
         List<Product> products = this.productService.findAllProducts();
@@ -61,17 +60,17 @@ public class ProductController {
     @GetMapping("/{id}")
     public ProductDetailsResponseDTO getOneProduct(@PathVariable Long id, HttpServletRequest request){
 
-        // 1. check login
-        Boolean logged = (Boolean) request.getAttribute("logged");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (logged == null || !logged) {
+        if (auth == null || !auth.isAuthenticated()) {
             throw new UnauthorizedException("Login required");
         }
 
-        // 2. check role
-        String role = (String) request.getAttribute("userRole");
+        // 2. check role (ADMIN only)
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        if (role == null || !role.equals("ADMIN")) {
+        if (!isAdmin) {
             throw new ForbiddenException("Admin only access");
         }
 
