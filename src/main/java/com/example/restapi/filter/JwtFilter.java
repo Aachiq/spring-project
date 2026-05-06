@@ -9,10 +9,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -48,20 +52,23 @@ public class JwtFilter extends OncePerRequestFilter {
         // 4. Extract role
         String role = jwtUtils.extractRole(token);
 
-        // 5. store role in request
-        request.setAttribute("userRole", role);
-        request.setAttribute("logged", true);
-
-        // get auth user data
         // Fetch user from token
         String email = jwtUtils.getEmailFromToken(token);
         Optional<UserAuth> userOpt = userAuthRepository.findUserAuthByEmail(email);
+
         if (userOpt.isEmpty()) {
             throw new UnauthorizedException("User not found");
         }
+        UserAuth currentUser = userOpt.get();
 
-        // Store current user in request attribute for controllers
-        request.setAttribute("currentUser", userOpt.get());
+        // Create authorities (roles)
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+        // Create authentication object
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
+
+        // THIS IS THE MOST IMPORTANT PART
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         // 6. request
         filterChain.doFilter(request, response);

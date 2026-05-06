@@ -91,6 +91,12 @@
         </dependency>
         <!-- END JWT dependencies -->
 
+        <!-- spring security dependency -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
